@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace BF2Mesh
 {
-
     // three dimensional floating point vector
     struct float3 // 12 bytes
     {
@@ -17,7 +16,6 @@ namespace BF2Mesh
         public float z;
     }
 
-
     // bounding box
     struct aabb // 24 bytes
     {
@@ -25,48 +23,43 @@ namespace BF2Mesh
         public float3 max;
     }
 
-
     // 4x4 transformation matrix
     class matrix4 // 64 bytes
     {
         public matrix4() { this.m = new float[4 * 4]; }
         public float[] m;
-
     }
 
-
     // bf2 mesh file header
-    struct bf2head             // 20 bytes
+    struct bf2head              // 20 bytes
     {
-        public uint u1;          // 0
-        public uint version;     // 10 for most bundledmesh, 6 for some bundledmesh, 11 for staticmesh
-        public uint u3;          // 0
-        public uint u4;          // 0
-        public uint u5;          // 0
+        public uint u1;         // 0
+        public uint version;    // 10 for most bundledmesh, 6 for some bundledmesh, 11 for staticmesh
+        public uint u3;         // 0
+        public uint u4;         // 0
+        public uint u5;         // 0
     }
 
 
     // vertex attribute table entry
-    struct bf2attrib           // 8 bytes
+    struct bf2attrib            // 8 bytes
     {
-        public UInt16 flag;      // some sort of boolean flag (if true the below field are to be ignored?)
-        public UInt16 offset;    // offset from vertex data start
-        public UInt16 vartype;   // attribute type (vec2, vec3 etc)
-        public UInt16 usage;     // usage ID (vertex, texcoord etc)
+        public UInt16 flag;     // some sort of boolean flag (if true the below field are to be ignored?)
+        public UInt16 offset;   // offset from vertex data start
+        public UInt16 vartype;  // attribute type (vec2, vec3 etc)
+        public UInt16 usage;    // usage ID (vertex, texcoord etc)
 
         // Note: "usage" field correspond to the definition in DX SDK "Include\d3d9types.h"
         //       Looks like DICE extended these for additional UV channels, these constants
         //       are much larger to avoid conflict with core DX enums.
     }
 
-
     // bone structure
-    struct bf2bone       // 68 bytes
+    struct bf2bone                  // 68 bytes
     {
-        public uint id;    //  4 bytes
-        public matrix4 transform;  // 64 bytes
+        public uint id;             //  4 bytes
+        public matrix4 transform;   // 64 bytes
     }
-
 
     // rig structure
     struct bf2rig
@@ -74,12 +67,9 @@ namespace BF2Mesh
         int bonenum;
         bf2bone[] bone;
 
-
         // functions
         public bool read(BinaryReader file, uint version)
         {
-
-
             // bonenum (4 bytes)
             bonenum = file.ReadInt32();
             Console.WriteLine("   bonenum: " + bonenum);
@@ -91,10 +81,6 @@ namespace BF2Mesh
             if (bonenum > 0)
             {
                 bone = new bf2bone[bonenum];
-
-
-
-
 
                 for (int i = 0; i < bonenum; i++)
                 {
@@ -108,49 +94,43 @@ namespace BF2Mesh
                             bone[i].transform.m[mi * mj] = file.ReadSingle();
                         }
                     }
-
-
                     Console.WriteLine("   boneid[" + i + "]: " + bone[i].id);
                 }
             }
 
-            // success
-            return true;
-
+            return true; // success
         }
     }
 
     // material (aka drawcall)
     struct bf2mat
     {
-        uint alphamode;             // 0=opaque, 1=blend, 2=alphatest
-        string fxfile;                 // shader filename string
-        string technique;              // technique name
+        uint alphamode;         // 0=opaque, 1=blend, 2=alphatest
+        string fxfile;          // shader filename string
+        string technique;       // technique name
 
         // texture map filenames
-        int mapnum;                         // number of texture map filenames
-        string[] map;                   // map filename array
+        int mapnum;             // number of texture map filenames
+        string[] map;           // map filename array
 
         // geometry info
-        uint vstart;                // vertex start offset
-        uint istart;                // index start offset
-        uint inum;                  // number of indices
-        uint vnum;                  // number of vertices
+        uint vstart;            // vertex start offset
+        uint istart;            // index start offset
+        uint inum;              // number of indices
+        uint vnum;              // number of vertices
 
         // misc
-        uint u4;                    // always 1?
-        uint u5;                  // always 0x34E9?
-        uint u6;                  // most often 18/19
-        aabb bounds;                        // per-material bounding box (StaticMesh only)
+        uint u4;                // always 1?
+        uint u5;                // always 0x34E9?
+        uint u6;                // most often 18/19
+        aabb bounds;            // per-material bounding box (StaticMesh only)
 
         // functions
         public bool read(BinaryReader file, uint version, bool isSkinnedMesh)
         {
-
             // alpha flag (4 bytes)
             if (!isSkinnedMesh)
             {
-
                 alphamode = file.ReadUInt32();
                 Console.WriteLine("   alphamode: " + alphamode);
             }
@@ -202,7 +182,6 @@ namespace BF2Mesh
             u5 = file.ReadUInt16();
             u6 = file.ReadUInt16();
 
-
             // bounds
             if (!isSkinnedMesh)
             {
@@ -215,8 +194,6 @@ namespace BF2Mesh
                     bounds.max.x = file.ReadSingle();
                     bounds.max.y = file.ReadSingle();
                     bounds.max.z = file.ReadSingle();
-
-
                 }
             }
 
@@ -232,26 +209,23 @@ namespace BF2Mesh
         // bounding box
         float3 min;
         float3 max;
-        float3 pivot; // not sure this is really a pivot (only on version<=6)
+        float3 pivot;       // not sure this is really a pivot (only on version<=6)
 
         // skinning matrices (SkinnedMesh only)
-        int rignum;              // this usually corresponds to meshnum (but what was meshnum again??)
-        bf2rig[] rig;             // array of rigs
+        int rignum;         // this usually corresponds to meshnum (but what was meshnum again??)
+        bf2rig[] rig;       // array of rigs
 
         // nodes (staticmesh and bundledmesh only)
         int nodenum;
         matrix4[] node;
 
         // material/drawcalls
-        int matnum;              // number of materials
-        bf2mat[] mat;             // material array
-
+        int matnum;         // number of materials
+        bf2mat[] mat;       // material array
 
         // functions
         public bool readNodeData(BinaryReader file, uint version, bool isSkinnedMesh, bool isBundledMesh)
         {
-
-
             // bounds (24 bytes)   
             min.x = file.ReadSingle();
             min.y = file.ReadSingle();
@@ -272,7 +246,6 @@ namespace BF2Mesh
             // skinnedmesh has different rigs
             if (isSkinnedMesh)
             {
-
                 // rignum (4 bytes)
                 rignum = file.ReadInt32();
                 Console.WriteLine("  rignum: " + rignum);
@@ -284,13 +257,10 @@ namespace BF2Mesh
                     for (int i = 0; i < rignum; i++)
                     {
                         Console.WriteLine("  rig block " + i + " start at " + file.BaseStream.Position);
-
                         rig[i].read(file, version);
-
                         Console.WriteLine("  rig block " + i + " end at " + file.BaseStream.Position);
                     }
                 }
-
             }
             else
             {
@@ -307,7 +277,6 @@ namespace BF2Mesh
                     {
                         node = new matrix4[nodenum];
 
-
                         for (int i = 0; i < nodenum; i++)
                         {
                             node[i] = new matrix4();
@@ -319,22 +288,16 @@ namespace BF2Mesh
                                 }
                             }
                         }
-
                     }
                 }
-
             }
 
             // success
             return true;
-
-
         }
         public bool readMatData(BinaryReader file, uint version, bool isSkinnedMesh)
         {
-
             // matnum (4 bytes)
-
             matnum = file.ReadInt32();
             Console.WriteLine("  matnum: " + matnum);
 
@@ -353,23 +316,19 @@ namespace BF2Mesh
                 }
             }
 
-            // success
-            return true;
-
+            return true; // success
         }
     }
 
     // geom, holds a collection of LODs
     struct bf2geom
     {
-        public int lodnum;              // number of LODs
-        public bf2lod[] lod;             // array of LODs
-
+        public int lodnum;      // number of LODs
+        public bf2lod[] lod;    // array of LODs
 
         // functions
         public bool read(BinaryReader file, uint version)
         {
-
             // lodnum (4 bytes)
             lodnum = file.ReadInt32();
             Console.WriteLine("lodnum: " + lodnum);
@@ -383,9 +342,7 @@ namespace BF2Mesh
                 lod = new bf2lod[lodnum];
             }
 
-            // success           
-            return true;
+            return true;  // success         
         }
     }
 }
-
