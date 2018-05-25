@@ -11,3 +11,11 @@ program that prints some useful information, and can be used to verify the
 integrity of mesh files.
 
 For more information, see: http://www.bytehazard.com
+
+
+###  
+BF2Console used for testing loading from levels
+1. Set PR_REPO for modpath in sysenv variables 
+2. change LEVEL in Program 
+
+TODO: proper modpath detection, sysargs, omit missing objects, improve conparser, use .tweaks, gui for users, and many more that probably will never get done...
