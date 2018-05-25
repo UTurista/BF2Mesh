@@ -8,39 +8,40 @@ using System.Threading.Tasks;
 
 namespace BF2Mesh
 {
-    class bf2Mesh
+    public class bf2mesh
     {
-        bf2head head;               // header
-        byte u1;                    // unknown: always 0?
+        private BF2Head head;               // header
+        private byte u1;                    // unknown: always 0?
 
         // geoms
-        int geomnum;                // numer of geoms
-        bf2geom[] geom;             // geom array
+        private int geomnum;                // numer of geoms
+        private bf2geom[] geom;             // geom array
 
         // vertex attribute table
-        int vertattribnum;          // number of vertex attribute table entries
-        bf2attrib[] vertattrib;     // array of vertex attribute table entries
+        private int vertattribnum;          // number of vertex attribute table entries
+        private bf2attrib[] vertattrib;     // array of vertex attribute table entries
 
         // vertices
-        int vertformat;             // always 4?  (e.g. GL_FLOAT)
-        int vertstride;             // vertex stride
-        int vertnum;                // number of vertices in buffer
-        float[] vert;               // vertex array
+        private int vertformat;             // always 4?  (e.g. GL_FLOAT)
+        private int vertstride;             // vertex stride
+        private int vertnum;                // number of vertices in buffer
+        private float[] vert;               // vertex array
 
         // indices
-        int indexnum;               // number of indices
+        private int indexnum;               // number of indices
 
-        UInt16[] index;             // index array
+        private UInt16[] index;             // index array
 
         // unknown
-        int u2;                     // always 8?
+        private int u2;                     // always 8?
 
         // internal/hacks
-        bool isSkinnedMesh;
-        bool isBundledMesh;
-        bool isBFP4F;
+        private bool isStaticMesh;
+        private bool isSkinnedMesh;
+        private bool isBundledMesh;
+        private bool isBFP4F;
 
-        public bf2Mesh Load(string filename)
+        public bf2mesh Load(string filename)
         {
             Debug.Assert(filename != null);
 
@@ -50,11 +51,17 @@ namespace BF2Mesh
                 return null;
             }
 
+            string fileExt = Path.GetExtension(filename).ToLower();
+            this.isStaticMesh = (fileExt == ".staticmesh");
+            this.isBundledMesh = (fileExt == ".bundledmesh");
+            this.isSkinnedMesh = (fileExt == ".skinnedmesh");
+
             // open file
             using (BinaryReader file = new BinaryReader(File.Open(filename, FileMode.Open)))
             {
                 if (file == null)
                     return null;
+                Console.WriteLine("Loading " + filename);
 
                 // header
                 head.u1 = file.ReadUInt32();
@@ -199,6 +206,28 @@ namespace BF2Mesh
                 Console.WriteLine("");
             }
             return null;
+        }
+
+        public List<string> GetTextureNames()
+        {
+            List<string> usedTextures = new List<string>();
+            foreach (bf2geom geom in this.geom)
+            {
+                foreach (bf2lod lod in geom.lod)
+                {
+                    foreach (bf2mat material in lod.mat)
+                    {
+                        foreach (string texture in material.map)
+                        {
+                            if (!usedTextures.Contains(texture))
+                            {
+                                usedTextures.Add(texture);
+                            }
+                        }
+                    }
+                }
+            }
+            return usedTextures;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace BF2Mesh
     }
 
     // bf2 mesh file header
-    struct bf2head              // 20 bytes
+    struct BF2Head              // 20 bytes
     {
         public uint u1;         // 0
         public uint version;    // 10 for most bundledmesh, 6 for some bundledmesh, 11 for staticmesh
@@ -64,8 +64,8 @@ namespace BF2Mesh
     // rig structure
     struct bf2rig
     {
-        int bonenum;
-        bf2bone[] bone;
+        public int bonenum;
+        public bf2bone[] bone;
 
         // functions
         public bool read(BinaryReader file, uint version)
@@ -91,6 +91,10 @@ namespace BF2Mesh
                     {
                         for (int mj = 0; mj < 4; mj++)
                         {
+                            if (bone[i].transform == null)
+                            {
+                                bone[i].transform = new matrix4();
+                            }
                             bone[i].transform.m[mi * mj] = file.ReadSingle();
                         }
                     }
@@ -105,25 +109,25 @@ namespace BF2Mesh
     // material (aka drawcall)
     struct bf2mat
     {
-        uint alphamode;         // 0=opaque, 1=blend, 2=alphatest
-        string fxfile;          // shader filename string
-        string technique;       // technique name
+        public uint alphamode;         // 0=opaque, 1=blend, 2=alphatest
+        public string fxfile;          // shader filename string
+        public string technique;       // technique name
 
         // texture map filenames
-        int mapnum;             // number of texture map filenames
-        string[] map;           // map filename array
+        public int mapnum;             // number of texture map filenames
+        public string[] map;           // map filename array
 
         // geometry info
-        uint vstart;            // vertex start offset
-        uint istart;            // index start offset
-        uint inum;              // number of indices
-        uint vnum;              // number of vertices
+        public uint vstart;            // vertex start offset
+        public uint istart;            // index start offset
+        public uint inum;              // number of indices
+        public uint vnum;              // number of vertices
 
         // misc
         uint u4;                // always 1?
         uint u5;                // always 0x34E9?
         uint u6;                // most often 18/19
-        aabb bounds;            // per-material bounding box (StaticMesh only)
+        public aabb bounds;            // per-material bounding box (StaticMesh only)
 
         // functions
         public bool read(BinaryReader file, uint version, bool isSkinnedMesh)
@@ -178,6 +182,7 @@ namespace BF2Mesh
             Console.WriteLine("   vnum: " + vnum);
 
             // unknown
+            // TODO: actually its 2x uint32
             u4 = file.ReadUInt32();
             u5 = file.ReadUInt16();
             u6 = file.ReadUInt16();
@@ -207,21 +212,21 @@ namespace BF2Mesh
     struct bf2lod
     {
         // bounding box
-        float3 min;
-        float3 max;
-        float3 pivot;       // not sure this is really a pivot (only on version<=6)
+        public float3 min;
+        public float3 max;
+        public float3 pivot;       // not sure this is really a pivot (only on version<=6)
 
         // skinning matrices (SkinnedMesh only)
-        int rignum;         // this usually corresponds to meshnum (but what was meshnum again??)
-        bf2rig[] rig;       // array of rigs
+        public int rignum;         // this usually corresponds to meshnum (but what was meshnum again??)
+        public bf2rig[] rig;       // array of rigs
 
         // nodes (staticmesh and bundledmesh only)
-        int nodenum;
-        matrix4[] node;
+        public int nodenum;
+        public matrix4[] node;
 
         // material/drawcalls
-        int matnum;         // number of materials
-        bf2mat[] mat;       // material array
+        public int matnum;         // number of materials
+        public bf2mat[] mat;       // material array
 
         // functions
         public bool readNodeData(BinaryReader file, uint version, bool isSkinnedMesh, bool isBundledMesh)
